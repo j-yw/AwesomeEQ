@@ -200,7 +200,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AwesomeEQAudioProcessor::cre
 	
 	juce::StringArray stringArray;
 	
-	for (int i = 0; i<4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		juce::String str;
 		str << (12 + i * 12);
