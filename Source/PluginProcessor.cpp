@@ -103,6 +103,11 @@ void AwesomeEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 	leftChannel.prepare(spec);
 	rightChannel.prepare(spec);
 	
+	auto channelSettings = getChannelSettings(parameters);
+	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, channelSettings.peakFreq, channelSettings.peakQuality, juce::Decibels::decibelsToGain(channelSettings.peakGainInDecibels));
+	
+	*leftChannel.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+	*rightChannel.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
 }
 
 void AwesomeEQAudioProcessor::releaseResources()
@@ -151,6 +156,12 @@ void AwesomeEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+	
+	auto channelSettings = getChannelSettings(parameters);
+	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), channelSettings.peakFreq, channelSettings.peakQuality, juce::Decibels::decibelsToGain(channelSettings.peakGainInDecibels));
+	
+	*leftChannel.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+	*rightChannel.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
 
 	juce::dsp::AudioBlock<float> block(buffer);
 	auto leftBlock = block.getSingleChannelBlock(0);
@@ -159,6 +170,8 @@ void AwesomeEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 	juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
 	leftChannel.process(leftContext);
 	rightChannel.process(rightContext);
+	
+	
 	
 }
 
@@ -185,6 +198,21 @@ void AwesomeEQAudioProcessor::setStateInformation (const void* data, int sizeInB
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+}
+
+ChannelSettings getChannelSettings (juce::AudioProcessorValueTreeState& parameters)
+{
+	ChannelSettings settings;
+	
+	settings.lowCutFreq = parameters.getRawParameterValue("Lowcut Freq") ->load();
+	settings.highCutFreq = parameters.getRawParameterValue("Highcut Freq") ->load();
+	settings.peakFreq = parameters.getRawParameterValue("Peak Freq") ->load();
+	settings.peakGainInDecibels = parameters.getRawParameterValue("Peak Gain") ->load();
+	settings.peakQuality = parameters.getRawParameterValue("Peak Quality") ->load();
+	settings.lowCutSlope = parameters.getRawParameterValue("Lowcut Slope") ->load();
+	settings.highCutSlope = parameters.getRawParameterValue("Highcut Slope") ->load();
+	
+	return settings;
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout AwesomeEQAudioProcessor::createParameterLayout()
