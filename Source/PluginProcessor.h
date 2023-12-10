@@ -82,7 +82,7 @@ private:
 	
 	MonoChain leftChannel, rightChannel;
 	
-	enum ChainPositions
+	enum ChannelPositions
 	{
 		Lowcut,
 		Peak,

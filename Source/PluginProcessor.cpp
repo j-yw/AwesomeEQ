@@ -104,13 +104,20 @@ void AwesomeEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 	rightChannel.prepare(spec);
 	
 	auto channelSettings = getChannelSettings(parameters);
-	auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(channelSettings.lowCutFreq,sampleRate, (channelSettings.lowCutSlope + 1) * 2);
-	auto &leftLowcut = leftChannel.get<ChainPositions::Lowcut>();
-	auto &rightLowcut = rightChannel.get<ChainPositions::Lowcut>();
+	auto lowcutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(channelSettings.lowCutFreq,sampleRate, (channelSettings.lowCutSlope + 1) * 2);
+	auto &leftLowCut = leftChannel.get<ChannelPositions::Lowcut>();
+	auto &rightLowCut = rightChannel.get<ChannelPositions::Lowcut>();
 	
 	updatePeakFilter(channelSettings);
-	updateCutFilter(leftLowcut, cutCoefficients, channelSettings.lowCutSlope);
-	updateCutFilter(rightLowcut, cutCoefficients, channelSettings.lowCutSlope);
+	updateCutFilter(leftLowCut, lowcutCoefficients, channelSettings.lowCutSlope);
+	updateCutFilter(rightLowCut, lowcutCoefficients, channelSettings.lowCutSlope);
+	
+	auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(channelSettings.highCutFreq, sampleRate, (channelSettings.highCutSlope + 1) * 2);
+	auto &leftHighCut = leftChannel.get<ChannelPositions::HighCut>();
+	auto &rightHighCut = rightChannel.get<ChannelPositions::HighCut>();
+	
+	updateCutFilter(leftHighCut, highCutCoefficients, channelSettings.highCutSlope);
+	updateCutFilter(rightHighCut, highCutCoefficients, channelSettings.highCutSlope);
 }
 
 void AwesomeEQAudioProcessor::releaseResources()
@@ -161,13 +168,21 @@ void AwesomeEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         buffer.clear (i, 0, buffer.getNumSamples());
 	
 	auto channelSettings = getChannelSettings(parameters);
-	auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(channelSettings.lowCutFreq, getSampleRate(), (channelSettings.lowCutSlope + 1) * 2);
-	auto &leftLowcut = leftChannel.get<ChainPositions::Lowcut>();
-	auto &rightLowcut = rightChannel.get<ChainPositions::Lowcut>();
-	
 	updatePeakFilter(channelSettings);
-	updateCutFilter(leftLowcut, cutCoefficients, channelSettings.lowCutSlope);
-	updateCutFilter(rightLowcut, cutCoefficients, channelSettings.lowCutSlope);
+	
+	auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(channelSettings.lowCutFreq, getSampleRate(), (channelSettings.lowCutSlope + 1) * 2);
+	auto &leftLowcut = leftChannel.get<ChannelPositions::Lowcut>();
+	auto &rightLowcut = rightChannel.get<ChannelPositions::Lowcut>();
+	
+	updateCutFilter(leftLowcut, lowCutCoefficients, channelSettings.lowCutSlope);
+	updateCutFilter(rightLowcut, lowCutCoefficients, channelSettings.lowCutSlope);
+	
+	auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(channelSettings.highCutFreq, getSampleRate(), (channelSettings.highCutSlope + 1) * 2);
+	auto &leftHighCut = leftChannel.get<ChannelPositions::HighCut>();
+	auto &rightHighCut = rightChannel.get<ChannelPositions::HighCut>();
+	
+	updateCutFilter(leftHighCut, highCutCoefficients, channelSettings.highCutSlope);
+	updateCutFilter(rightHighCut, highCutCoefficients, channelSettings.highCutSlope);
 	
 
 	juce::dsp::AudioBlock<float> block(buffer);
@@ -228,8 +243,8 @@ void AwesomeEQAudioProcessor::updatePeakFilter(const ChannelSettings &channelSet
 {
 	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), channelSettings.peakFreq, channelSettings.peakQuality, juce::Decibels::decibelsToGain(channelSettings.peakGainInDecibels));
 	
-	updateCoefficients(leftChannel.get<ChainPositions::Peak>().coefficients , peakCoefficients);
-	updateCoefficients(rightChannel.get<ChainPositions::Peak>().coefficients , peakCoefficients);
+	updateCoefficients(leftChannel.get<ChannelPositions::Peak>().coefficients , peakCoefficients);
+	updateCoefficients(rightChannel.get<ChannelPositions::Peak>().coefficients , peakCoefficients);
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout AwesomeEQAudioProcessor::createParameterLayout()
