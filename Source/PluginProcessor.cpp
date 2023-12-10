@@ -104,10 +104,8 @@ void AwesomeEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 	rightChannel.prepare(spec);
 	
 	auto channelSettings = getChannelSettings(parameters);
-	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, channelSettings.peakFreq, channelSettings.peakQuality, juce::Decibels::decibelsToGain(channelSettings.peakGainInDecibels));
 	
-	*leftChannel.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
-	*rightChannel.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+	updatePeakFilter(channelSettings);
 	
 	auto cutCoefficient = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(channelSettings.lowCutFreq,sampleRate, (channelSettings.lowCutSlope + 1) * 2);
 	
@@ -263,8 +261,8 @@ void AwesomeEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         buffer.clear (i, 0, buffer.getNumSamples());
 	
 	auto channelSettings = getChannelSettings(parameters);
-	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), channelSettings.peakFreq, channelSettings.peakQuality, juce::Decibels::decibelsToGain(channelSettings.peakGainInDecibels));
 	
+	updatePeakFilter(channelSettings);
 	
 	auto cutCoefficient = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(channelSettings.lowCutFreq, getSampleRate(), (channelSettings.lowCutSlope + 1) * 2);
 	
@@ -371,8 +369,6 @@ void AwesomeEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 		}
 	}
 	
-	*leftChannel.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
-	*rightChannel.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
 
 	juce::dsp::AudioBlock<float> block(buffer);
 	auto leftBlock = block.getSingleChannelBlock(0);
@@ -424,6 +420,19 @@ ChannelSettings getChannelSettings (juce::AudioProcessorValueTreeState& paramete
 	settings.highCutSlope = static_cast<Slope>(parameters.getRawParameterValue("Highcut Slope") ->load());
 	
 	return settings;
+}
+
+void AwesomeEQAudioProcessor::updateCoefficients(Coefficients &old, const Coefficients &replacements)
+{
+	*old = *replacements;
+}
+
+void AwesomeEQAudioProcessor::updatePeakFilter(const ChannelSettings &channelSettings)
+{
+	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), channelSettings.peakFreq, channelSettings.peakQuality, juce::Decibels::decibelsToGain(channelSettings.peakGainInDecibels));
+	
+	updateCoefficients(leftChannel.get<ChainPositions::Peak>().coefficients , peakCoefficients);
+	updateCoefficients(rightChannel.get<ChainPositions::Peak>().coefficients , peakCoefficients);
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout AwesomeEQAudioProcessor::createParameterLayout()
