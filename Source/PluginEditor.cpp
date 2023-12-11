@@ -11,7 +11,17 @@
 
 //==============================================================================
 AwesomeEQAudioProcessorEditor::AwesomeEQAudioProcessorEditor (AwesomeEQAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+    : AudioProcessorEditor (&p), audioProcessor (p),
+peakFreqSliderAttachment(audioProcessor.parameters, "Peak Freq", peakFreqSlider),
+peakGainSliderAttachment(audioProcessor.parameters, "Peak Gain", peakGainSlider),
+peakQualitySliderAttachment(audioProcessor.parameters, "Peak Quality", peakQualitySlider),
+
+lowCutFreqSliderAttachment(audioProcessor.parameters, "LowCut Freq", lowCutFreqSlider),
+lowCutSlopeSliderAttachment(audioProcessor.parameters, "LowCut Slope", lowCutSlopeSlider),
+
+highCutFreqSliderAttachment(audioProcessor.parameters, "HighCut Freq", highCutFreqSlider),
+highCutSlopeSliderAttachment(audioProcessor.parameters, "HighCut Slope", highCutSlopeSlider)
+
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.

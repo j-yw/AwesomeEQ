@@ -201,13 +201,13 @@ ChannelSettings getChannelSettings (juce::AudioProcessorValueTreeState& paramete
 {
 	ChannelSettings settings;
 	
-	settings.lowCutFreq = parameters.getRawParameterValue("Lowcut Freq") ->load();
-	settings.highCutFreq = parameters.getRawParameterValue("Highcut Freq") ->load();
+	settings.lowCutFreq = parameters.getRawParameterValue("LowCut Freq") ->load();
+	settings.highCutFreq = parameters.getRawParameterValue("HighCut Freq") ->load();
 	settings.peakFreq = parameters.getRawParameterValue("Peak Freq") ->load();
 	settings.peakGainInDecibels = parameters.getRawParameterValue("Peak Gain") ->load();
 	settings.peakQuality = parameters.getRawParameterValue("Peak Quality") ->load();
-	settings.lowCutSlope = static_cast<Slope>(parameters.getRawParameterValue("Lowcut Slope") ->load());
-	settings.highCutSlope = static_cast<Slope>(parameters.getRawParameterValue("Highcut Slope") ->load());
+	settings.lowCutSlope = static_cast<Slope>(parameters.getRawParameterValue("LowCut Slope") ->load());
+	settings.highCutSlope = static_cast<Slope>(parameters.getRawParameterValue("HighCut Slope") ->load());
 	
 	return settings;
 }
@@ -256,9 +256,9 @@ void AwesomeEQAudioProcessor::updatePeakFilter(const ChannelSettings &channelSet
 juce::AudioProcessorValueTreeState::ParameterLayout AwesomeEQAudioProcessor::createParameterLayout()
 {
 	juce::AudioProcessorValueTreeState::ParameterLayout layout;
-	layout.add(std::make_unique<juce::AudioParameterFloat>("Lowcut Freq", "Lowcut Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 20.f ));
+	layout.add(std::make_unique<juce::AudioParameterFloat>("LowCut Freq", "LowCut Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 20.f ));
 	
-	layout.add(std::make_unique<juce::AudioParameterFloat>("Highcut Freq", "Highcut Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 20000.f ));
+	layout.add(std::make_unique<juce::AudioParameterFloat>("HighCut Freq", "HighCut Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 20000.f ));
 	
 	layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Freq", "Peak Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 750.f ));
 	
@@ -279,8 +279,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout AwesomeEQAudioProcessor::cre
 		stringArray.add(str);
 	}
 	
-	layout.add (std::make_unique<juce::AudioParameterChoice>("Lowcut Slope", "Lowcut Slope", stringArray, 0));
-	layout.add (std::make_unique<juce::AudioParameterChoice>("Highcut Slope", "Highcut Slope", stringArray, 0));
+	layout.add (std::make_unique<juce::AudioParameterChoice>("LowCut Slope", "LowCut Slope", stringArray, 0));
+	layout.add (std::make_unique<juce::AudioParameterChoice>("HighCut Slope", "HighCut Slope", stringArray, 0));
 	
 	return layout;
 }

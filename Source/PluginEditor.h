@@ -45,6 +45,18 @@ private:
 	highCutFreqSlider,
 	highCutSlopeSlider;
 	
+	using PARAMETERS = juce::AudioProcessorValueTreeState;
+	using Attachment = PARAMETERS::SliderAttachment;
+	
+	Attachment
+	peakFreqSliderAttachment,
+	peakGainSliderAttachment,
+	peakQualitySliderAttachment,
+	lowCutFreqSliderAttachment,
+	lowCutSlopeSliderAttachment,
+	highCutFreqSliderAttachment,
+	highCutSlopeSliderAttachment;
+	
 	std::vector<juce::Component*> getComps();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AwesomeEQAudioProcessorEditor)
