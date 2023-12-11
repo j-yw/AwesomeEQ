@@ -171,7 +171,8 @@ bool AwesomeEQAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* AwesomeEQAudioProcessor::createEditor()
 {
-	return new juce::GenericAudioProcessorEditor(*this);
+	return new AwesomeEQAudioProcessorEditor(*this);
+//	return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
