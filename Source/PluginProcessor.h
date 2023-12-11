@@ -75,9 +75,7 @@ public:
 
 private:
 	using Filter = juce::dsp::IIR::Filter<float>;
-	
 	using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
-	
 	using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
 	
 	MonoChain leftChannel, rightChannel;
@@ -90,9 +88,7 @@ private:
 	};
 	
 	void updatePeakFilter(const ChannelSettings& ChannelSettings);
-	
 	using Coefficients = Filter::CoefficientsPtr;
-	
 	static void updateCoefficients(Coefficients& old, const Coefficients& replacements);
 	
 	template<int Index, typename ChannelType, typename CoefficientType>
@@ -130,6 +126,11 @@ private:
 			}
 		}
 	}
+	
+	void updateLowCutFilters(const ChannelSettings& channelSettings);
+	void updateHighCutFilters(const ChannelSettings& channelSettings);
+	void updateFilters();
+	
 	//==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AwesomeEQAudioProcessor)
 };
