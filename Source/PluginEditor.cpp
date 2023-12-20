@@ -41,11 +41,79 @@ AwesomeEQAudioProcessorEditor::~AwesomeEQAudioProcessorEditor()
 void AwesomeEQAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    g.setColour (juce::Colours::white);
-    g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+	using namespace juce;
+	
+    g.fillAll (Colours::black);
+	
+	auto bounds = getLocalBounds();
+	auto responseArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
+	auto width = responseArea.getWidth();
+	
+	auto &lowcut = monoChain.get<ChannelPositions::LowCut>();
+	auto &peak = monoChain.get<ChannelPositions::Peak>();
+	auto &highcut = monoChain.get<ChannelPositions::HighCut>();
+	
+	auto sampleRate = audioProcessor.getSampleRate();
+	
+	std::vector<double> magnitutes;
+	magnitutes.resize(width);
+	
+	
+	for (int i = 0; i < width; i++)
+	{
+		double magnitute = 1.f;
+		auto freq = mapToLog10(double(i) / double(width), 20.0, 20000.0);
+		
+		if (!monoChain.isBypassed<ChannelPositions::Peak>())
+		{
+			magnitute *= peak.coefficients -> getMagnitudeForFrequency(freq, sampleRate);
+		}
+		
+		if (!lowcut.isBypassed<0>())
+		{
+			lowcut.get<0>().coefficients -> getMagnitudeForFrequency(freq, sampleRate);
+		}
+		
+		if (!lowcut.isBypassed<1>())
+		{
+			lowcut.get<1>().coefficients -> getMagnitudeForFrequency(freq, sampleRate);
+		}
+		
+		if (!lowcut.isBypassed<2>())
+		{
+			lowcut.get<2>().coefficients -> getMagnitudeForFrequency(freq, sampleRate);
+		}
+		
+		if (!lowcut.isBypassed<3>())
+		{
+			lowcut.get<3>().coefficients -> getMagnitudeForFrequency(freq, sampleRate);
+		}
+			
+		magnitutes[i] = Decibels::gainToDecibels(magnitute);
+	}
+	
+	Path responseCurve;
+	
+	const double outputMin = responseArea.getBottom();
+	const double outputMax = responseArea.getY();
+	
+	auto map = [outputMin, outputMax](double input)
+	{
+		return jmap(input, -24.0, 24.0, outputMin,	outputMax);
+	};
+	
+	responseCurve.startNewSubPath(responseArea.getX(), map(magnitutes.front()));
+	
+	for(size_t i = 0; i < magnitutes.size(); i++)
+	{
+		responseCurve.lineTo(responseArea.getX() + i,map (magnitutes[i]));
+	}
+	
+	g.setColour(Colours::orange);
+	g.drawRoundedRectangle(responseArea.toFloat(), 4.f, 1.f);
+	g.setColour(Colours::white);
+	g.strokePath(responseCurve, PathStrokeType(2.f));
+	
 }
 
 void AwesomeEQAudioProcessorEditor::resized()

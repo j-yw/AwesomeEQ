@@ -29,6 +29,18 @@ ChannelSettings getChannelSettings(juce::AudioProcessorValueTreeState& parameter
 //==============================================================================
 /**
 */
+
+using Filter = juce::dsp::IIR::Filter<float>;
+using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
+using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
+	
+enum ChannelPositions
+{
+	LowCut,
+	Peak,
+	HighCut
+};
+
 class AwesomeEQAudioProcessor  : public juce::AudioProcessor
 {
 public:
@@ -74,18 +86,7 @@ public:
 	juce::AudioProcessorValueTreeState parameters {*this, nullptr, "Parameters", createParameterLayout()};
 
 private:
-	using Filter = juce::dsp::IIR::Filter<float>;
-	using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
-	using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
-	
 	MonoChain leftChannel, rightChannel;
-	
-	enum ChannelPositions
-	{
-		Lowcut,
-		Peak,
-		HighCut
-	};
 	
 	void updatePeakFilter(const ChannelSettings& ChannelSettings);
 	using Coefficients = Filter::CoefficientsPtr;

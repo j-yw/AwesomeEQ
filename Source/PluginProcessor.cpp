@@ -220,8 +220,8 @@ void AwesomeEQAudioProcessor::updateCoefficients(Coefficients &old, const Coeffi
 void AwesomeEQAudioProcessor::updateLowCutFilters(const ChannelSettings &channelSettings)
 {
 	auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(channelSettings.lowCutFreq, getSampleRate(), (channelSettings.lowCutSlope + 1) * 2);
-	auto &leftLowcut = leftChannel.get<ChannelPositions::Lowcut>();
-	auto &rightLowcut = rightChannel.get<ChannelPositions::Lowcut>();
+	auto &leftLowcut = leftChannel.get<ChannelPositions::LowCut>();
+	auto &rightLowcut = rightChannel.get<ChannelPositions::LowCut>();
 	
 	updateCutFilter(leftLowcut, lowCutCoefficients, channelSettings.lowCutSlope);
 	updateCutFilter(rightLowcut, lowCutCoefficients, channelSettings.lowCutSlope);
