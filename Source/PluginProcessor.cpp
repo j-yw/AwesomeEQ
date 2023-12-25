@@ -212,7 +212,7 @@ ChannelSettings getChannelSettings (juce::AudioProcessorValueTreeState& paramete
 	return settings;
 }
 
-void AwesomeEQAudioProcessor::updateCoefficients(Coefficients &old, const Coefficients &replacements)
+void updateCoefficients(Coefficients &old, const Coefficients &replacements)
 {
 	*old = *replacements;
 }
@@ -245,10 +245,14 @@ void AwesomeEQAudioProcessor::updateFilters()
 	updateHighCutFilters(channelSettings);
 }
 
+Coefficients makePeakFilter(const ChannelSettings& channelSettings, double sampleRate)
+{
+	return juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, channelSettings.peakFreq, channelSettings.peakQuality, juce::Decibels::decibelsToGain(channelSettings.peakGainInDecibels));
+}
+
 void AwesomeEQAudioProcessor::updatePeakFilter(const ChannelSettings &channelSettings)
 {
-	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), channelSettings.peakFreq, channelSettings.peakQuality, juce::Decibels::decibelsToGain(channelSettings.peakGainInDecibels));
-	
+	auto peakCoefficients = makePeakFilter(channelSettings, getSampleRate());
 	updateCoefficients(leftChannel.get<ChannelPositions::Peak>().coefficients , peakCoefficients);
 	updateCoefficients(rightChannel.get<ChannelPositions::Peak>().coefficients , peakCoefficients);
 }

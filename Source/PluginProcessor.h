@@ -41,6 +41,11 @@ enum ChannelPositions
 	HighCut
 };
 
+using Coefficients = Filter::CoefficientsPtr;
+void updateCoefficients(Coefficients& old, const Coefficients& replacements);
+
+Coefficients makePeakFilter(const ChannelSettings& channelSettings, double sampleRate);
+
 class AwesomeEQAudioProcessor  : public juce::AudioProcessor
 {
 public:
@@ -89,8 +94,6 @@ private:
 	MonoChain leftChannel, rightChannel;
 	
 	void updatePeakFilter(const ChannelSettings& ChannelSettings);
-	using Coefficients = Filter::CoefficientsPtr;
-	static void updateCoefficients(Coefficients& old, const Coefficients& replacements);
 	
 	template<int Index, typename ChannelType, typename CoefficientType>
 	void update (ChannelType& channel, const CoefficientType& cutCoefficients)

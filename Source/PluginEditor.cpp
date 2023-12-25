@@ -135,6 +135,21 @@ void AwesomeEQAudioProcessorEditor::resized()
 	peakQualitySlider.setBounds(bounds);
 }
 
+void AwesomeEQAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue)
+{
+	parametersChanged.set(true);
+}
+
+void AwesomeEQAudioProcessorEditor::timerCallback()
+{
+	if(parametersChanged.compareAndSetBool(false, true))
+	{
+		// update monoChain
+		// signal repaint
+	}
+	
+}
+
 std::vector<juce::Component*> AwesomeEQAudioProcessorEditor::getComps()
 {
 	return
