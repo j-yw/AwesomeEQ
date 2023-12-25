@@ -46,6 +46,52 @@ void updateCoefficients(Coefficients& old, const Coefficients& replacements);
 
 Coefficients makePeakFilter(const ChannelSettings& channelSettings, double sampleRate);
 
+template<int Index, typename ChannelType, typename CoefficientType>
+void update (ChannelType& channel, const CoefficientType& cutCoefficients)
+{
+	updateCoefficients(channel.template get<Index>().coefficients, cutCoefficients[Index]);
+	channel.template setBypassed<Index>(false);
+}
+
+template<typename ChannelType, typename CoefficientType>
+void updateCutFilter(ChannelType& channel, const CoefficientType& cutCoefficients, const Slope& lowCutSlope)
+{
+	channel.template setBypassed<0>(true);
+	channel.template setBypassed<1>(true);
+	channel.template setBypassed<2>(true);
+	channel.template setBypassed<3>(true);
+	
+	switch (lowCutSlope)
+	{
+		case Slope_48:
+		{
+			update<3>(channel, cutCoefficients);
+		}
+		case Slope_36:
+		{
+			update<2>(channel, cutCoefficients);
+		}
+		case Slope_24:
+		{
+			update<1>(channel, cutCoefficients);
+		}
+		case Slope_12:
+		{
+			update<0>(channel, cutCoefficients);
+		}
+	}
+}
+
+inline auto makeLowCutFilkter (const ChannelSettings &channelSettings, double sampleRate)
+{
+	return juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(channelSettings.lowCutFreq, sampleRate, (channelSettings.lowCutSlope + 1) * 2);
+}
+
+inline auto makeHighCutFilkter (const ChannelSettings &channelSettings, double sampleRate)
+{
+	return juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(channelSettings.highCutFreq, sampleRate, (channelSettings.highCutSlope + 1) * 2);
+}
+
 class AwesomeEQAudioProcessor  : public juce::AudioProcessor
 {
 public:
@@ -95,41 +141,7 @@ private:
 	
 	void updatePeakFilter(const ChannelSettings& ChannelSettings);
 	
-	template<int Index, typename ChannelType, typename CoefficientType>
-	void update (ChannelType& channel, const CoefficientType& cutCoefficients)
-	{
-		updateCoefficients(channel.template get<Index>().coefficients, cutCoefficients[Index]);
-		channel.template setBypassed<Index>(false);
-	}
-
-	template<typename ChannelType, typename CoefficientType>
-	void updateCutFilter(ChannelType& channel, const CoefficientType& cutCoefficients, const Slope& lowCutSlope)
-	{
-		channel.template setBypassed<0>(true);
-		channel.template setBypassed<1>(true);
-		channel.template setBypassed<2>(true);
-		channel.template setBypassed<3>(true);
-		
-		switch (lowCutSlope)
-		{
-			case Slope_48:
-			{
-				update<3>(channel, cutCoefficients);
-			}
-			case Slope_36:
-			{
-				update<2>(channel, cutCoefficients);
-			}
-			case Slope_24:
-			{
-				update<1>(channel, cutCoefficients);
-			}
-			case Slope_12:
-			{
-				update<0>(channel, cutCoefficients);
-			}
-		}
-	}
+	
 	
 	void updateLowCutFilters(const ChannelSettings& channelSettings);
 	void updateHighCutFilters(const ChannelSettings& channelSettings);

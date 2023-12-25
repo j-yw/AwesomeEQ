@@ -30,11 +30,27 @@ highCutSlopeSliderAttachment(audioProcessor.parameters, "HighCut Slope", highCut
 		addAndMakeVisible(component);
 	}
 	
-    setSize (400, 300);
+	const auto &params = audioProcessor.getParameters();
+	
+	for(auto param : params)
+	{
+		param ->addListener(this);
+	}
+	
+	startTimerHz(60);
+	
+    setSize (600, 400);
 }
 
 AwesomeEQAudioProcessorEditor::~AwesomeEQAudioProcessorEditor()
 {
+	const auto &params = audioProcessor.getParameters();
+	
+	for(auto param : params)
+	{
+		param ->removeListener(this);
+	}
+	
 }
 
 //==============================================================================
@@ -144,8 +160,10 @@ void AwesomeEQAudioProcessorEditor::timerCallback()
 {
 	if(parametersChanged.compareAndSetBool(false, true))
 	{
-		// update monoChain
-		// signal repaint
+		auto channelSettings = getChannelSettings(audioProcessor.parameters);
+		auto peakCoefficients = makePeakFilter(channelSettings, audioProcessor.getSampleRate());
+		updateCoefficients(monoChain.get<ChannelPositions::Peak>().coefficients, peakCoefficients);
+		repaint();
 	}
 	
 }
